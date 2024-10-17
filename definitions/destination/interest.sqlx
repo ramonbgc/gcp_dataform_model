@@ -1,0 +1,28 @@
+config {
+    type: "table"
+}
+
+WITH inference_distance_centroids as (
+  SELECT i.customer_number, u.*, RANK() OVER (PARTITION BY customer_number ORDER BY distance ASC) AS distance_rank
+  FROM ${ref('inference_data')} i, UNNEST(i.NEAREST_CENTROIDS_DISTANCE) u
+), centroids AS (
+  SELECT *
+  FROM ML.CENTROIDS(MODEL `prj-poc-vivobr.ds_tlfn_poc.segmentation_sessions_one_hot`)
+), features AS (
+  SELECT centroid_id, feature, numerical_value
+  FROM centroids c
+  WHERE numerical_value = (SELECT MAX(numerical_value) FROM centroids WHERE centroid_id=c.centroid_id)
+)
+SELECT i.customer_number as msisdn, f.feature as interesse,
+  CASE MIN(i.distance_rank)
+    WHEN 1 THEN 'ALTO'
+    WHEN 2 THEN 'MEDIO'
+    WHEN 3 THEN 'BAIXO'
+  END
+    AS nvl_interesse
+  --,f.numerical_value, i.CENTROID_ID, i.distance, i.distance_rank,
+FROM inference_distance_centroids i
+  LEFT JOIN features f ON f.centroid_id=i.centroid_id
+WHERE distance_rank <= 3
+  --and i.nr_tlfn = '11 900016618'
+GROUP BY i.customer_number, f.feature

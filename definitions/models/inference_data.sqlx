@@ -1,0 +1,13 @@
+config {
+  type: 'table',
+  dependencies: ["model_creation"]
+}
+
+SELECT *
+FROM ML.PREDICT(
+    MODEL `prj-poc-vivobr.ds_tlfn_poc.segmentation_sessions_one_hot`,
+    (
+        SELECT *
+        FROM ${ref('navigation_data')}
+    )
+)

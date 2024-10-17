@@ -1,0 +1,18 @@
+config {
+  type: 'operations',
+  hasOutput: true
+}
+
+CREATE OR REPLACE MODEL ds_tlfn_poc.segmentation_sessions_one_hot
+OPTIONS(
+  MODEL_TYPE='KMEANS',
+  KMEANS_INIT_METHOD = 'KMEANS++',
+  NUM_CLUSTERS = 24,
+  DISTANCE_TYPE = 'COSINE',
+  -- MODEL_REGISTRY = "vertex_ai",
+  -- VERTEX_AI_MODEL_ID = "segmentation_sessions",
+  -- VERTEX_AI_MODEL_VERSION_ALIASES = ["one_hot_encoder"],
+  STANDARDIZE_FEATURES = TRUE
+  ) AS
+SELECT * EXCEPT (customer_number)
+FROM ${ref("navigation_data")}

@@ -1,0 +1,12 @@
+config {
+    type: "view"
+}
+
+WITH navigation_data AS (
+  SELECT
+    REGEXP_REPLACE(ds_sbpt, '[^a-zA-Z]', '') as interest, nr_tlfn as customer_number
+  FROM ${ref('tb_case_navegacao_data')}
+)
+SELECT *
+FROM navigation_data
+  PIVOT(count(interest) FOR interest IN ("Jogos","Viagem","Compras","Emprego","Governo","Delivery","Esportes","Finanas","Notcias","Streaming","Ecommerce","Educao","Fotografia","Marketplace","Mensageiros","Utilitrios","Produtividade","subprotocolo","Entretenimento","MdiasSociais","SadeeBemEstar","StreamingdeMsica","ArmazenamentoemNuvem","ServiosdeTransporte"))
